@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KPL - Tournament Manager</title>
+    <style>
+        :root { 
+            --primary-grad: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
+            --blue-grad: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            --bg: #090e1a; 
+            --glass: rgba(255, 255, 255, 0.05); 
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #ecf0f1;
+            --text-muted: #95a5a6;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg); 
+            background-image: radial-gradient(at 47% 33%, #1a253a 0px, transparent 50%);
+            color: var(--text-main); margin: 0; display: flex; justify-content: center; padding: 15px; 
+        }
+
+        .container { 
+            width: 100%; max-width: 480px; background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(15px); padding: 25px; border-radius: 24px; 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8); border: 1px solid var(--glass-border);
+            display: flex; flex-direction: column; min-height: 92vh;
+        }
+
+        /* HEADER & LOGO */
+        .header-box { text-align: center; margin-bottom: 25px; }
+        .logo-container {
+            width: 100%; height: 180px; border-radius: 16px; overflow: hidden;
+            border: 1px solid var(--glass-border); background: #fff; display: flex; align-items: center; justify-content: center;
+        }
+        .logo-container img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* INPUT SECTION */
+        .input-section { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
+        input { padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass); color: white; outline: none; font-size: 14px; }
+        input:focus { border-color: #3498db; }
+
+        .btn { padding: 14px 20px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
+        .add-btn { background: var(--blue-grad); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
+        .save-btn { background: var(--primary-grad); color: #000; width: 100%; margin-top: 10px; }
+
+        /* --- BRANDING SECTION (SPONSORS & BROADCAST) --- */
+        .branding-container { margin-top: auto; padding-top: 30px; text-align: center; }
+        .section-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .section-label::before, .section-label::after { content: ""; height: 1px; width: 30px; background: var(--glass-border); }
+
+        /* Sponsor Style */
+        .sponsor-box { width: 100%; height: 80px; background: #000; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 25px; overflow: hidden; }
+        .sponsor-box img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* Broadcast Style */
+        .broadcast-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .broadcast-item { background: #fff; border-radius: 10px; height: 60px; overflow: hidden; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; }
+        .broadcast-item img { width: 90%; height: 90%; object-fit: contain; }
+
+        /* MATCHES & TABLE */
+        .match-card { background: var(--glass); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--glass-border); }
+        .match-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
+        .score-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: var(--glass); border-radius: 12px; overflow: hidden; font-size: 11px; }
+        th { color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; }
+        td { padding: 12px 8px; border-bottom: 1px solid var(--glass-border); text-align: center; }
+
+        .hidden { display: none; }
+        .reset-btn { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-box">
+        <div class="logo-container">
+            <img src="logo.jpg" alt="KPL Logo">
+        </div>
+    </div>
+
+    <div class="input-section" id="setupSection">
+        <input type="text" id="teamInput" placeholder="Total teams count (e.g. 4)">
+        <button class="btn add-btn" onclick="handleAdd()">ADD TEAM</button>
+    </div>
+
+    <div id="leagueContent" class="hidden">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h2 style="font-size: 16px; color: var(--text-muted); margin: 0;">Matches</h2>
+            <button class="reset-btn" onclick="resetAll()">RESET</button>
+        </div>
+        <div id="matchList"></div>
+        <h2 style="font-size: 16px; color: var(--text-muted); margin: 25px 0 10px 0;">Points Table</h2>
+        <table>
+            <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
+            <tbody id="pointsTable"></tbody>
+        </table>
+    </div>
+
+    <div class="branding-container">
+        <div class="section-label">Main Sponsor</div>
+        <div class="sponsor-box">
+            <img src="sponsor.jpg" alt="Payyoli Mixture">
+        </div>
+
+        <div class="section-label">Broadcasting Partners</div>
+        <div class="broadcast-grid">
+            <div class="broadcast-item">
+                <img src="broadcast3.jpg" alt="Airtel Hotstar">
+            </div>
+            <div class="broadcast-item">
+                <img src="broadcast2.jpg" alt="Nakshatra Kalavedhi">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let teams = []; let matches = []; let teamLimit = 0; let isCountSet = false;
+
+    function saveToLocal() { localStorage.setItem('kplData', JSON.stringify({ teams, matches, teamLimit, isCountSet })); }
+
+    function loadFromLocal() {
+        const saved = localStorage.getItem('kplData');
+        if (saved) {
+            const data = JSON.parse(saved);
+            teams = data.teams; matches = data.matches; teamLimit = data.teamLimit; isCountSet = data.isCountSet;
+            if (isCountSet) {
+                document.getElementById('setupSection').classList.add('hidden');
+                document.getElementById('leagueContent').classList.remove('hidden');
+                updateUI();
+            }
+        }
+    }
+
+    function handleAdd() {
+        const input = document.getElementById('teamInput');
+        const val = input.value.trim();
+        if (!isCountSet) {
+            if (val && !isNaN(val)) {
+                teamLimit = parseInt(val); isCountSet = true;
+                input.value = ''; input.placeholder = "Enter Team 1 Name";
+            }
+        } else {
+            if (val && !teams.find(t => t.name === val)) {
+                teams.push({ name: val, played: 0, wins: 0, losses: 0, points: 0 });
+                input.value = '';
+                if (teams.length >= teamLimit) {
+                    document.getElementById('setupSection').classList.add('hidden');
+                    document.getElementById('leagueContent').classList.remove('hidden');
+                    generateMatches(); updateUI();
+                } else {
+                    input.placeholder = `Enter Team ${teams.length + 1} Name`;
+                }
+            }
+        }
+        saveToLocal();
+    }
+
+    function generateMatches() {
+        matches = []; let temp = [...teams];
+        if (temp.length % 2 !== 0) temp.push({ name: "BYE" });
+        let n = temp.length;
+        for (let r = 0; r < n - 1; r++) {
+            for (let i = 0; i < n / 2; i++) {
+                let t1 = temp[i]; let t2 = temp[n - 1 - i];
+                if (t1.name !== "BYE" && t2.name !== "BYE") matches.push({ t1: t1.name, t2: t2.name, done: false, winner: null });
+            }
+            temp.splice(1, 0, temp.pop());
+        }
+    }
+
+    function saveResult(idx) {
+        const r1 = parseInt(document.getElementById(`r1-${idx}`).value) || 0;
+        const r2 = parseInt(document.getElementById(`r2-${idx}`).value) || 0;
+        const m = matches[idx];
+        const t1 = teams.find(t => t.name === m.t1); const t2 = teams.find(t => t.name === m.t2);
+        t1.played++; t2.played++;
+        if (r1 > r2) { t1.wins++; t1.points += 2; t2.losses++; m.winner = m.t1; }
+        else if (r2 > r1) { t2.wins++; t2.points += 2; t1.losses++; m.winner = m.t2; }
+        else { t1.points++; t2.points++; m.winner = "Draw"; }
+        m.done = true; updateUI(); saveToLocal();
+    }
+
+    function updateUI() {
+        const tb = document.getElementById('pointsTable'); tb.innerHTML = '';
+        [...teams].sort((a,b) => b.points - a.points).forEach(t => {
+            tb.innerHTML += `<tr><td style="text-align:left;font-weight:bold;">${t.name}</td><td>${t.played}</td><td>${t.wins}</td><td>${t.losses}</td><td style="color:#f1c40f">${t.points}</td></tr>`;
+        });
+        const ml = document.getElementById('matchList'); ml.innerHTML = '';
+        matches.forEach((m, i) => {
+            ml.innerHTML += `<div class="match-card">
+                <div class="match-header"><span>Match ${i+1}</span> <span>${m.t1} vs ${m.t2}</span></div>
+                ${!m.done ? `<div class="score-inputs">
+                    <input type="number" id="r1-${i}" placeholder="${m.t1} Runs">
+                    <input type="number" id="r2-${i}" placeholder="${m.t2} Runs">
+                    <button class="btn save-btn" onclick="saveResult(${i})">SAVE RESULT</button>
+                </div>` : `<div style="color:#f1c40f; font-weight:bold; text-align:center; margin-top:10px;">🏆 WINNER: ${m.winner}</div>`}
+            </div>`;
+        });
+    }
+
+    function resetAll() { if(confirm("Clear all?")) { localStorage.removeItem('kplData'); location.reload(); } }
+    window.onload = loadFromLocal;
+</script>
+</body>
+</html>
