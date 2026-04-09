@@ -35,175 +35,244 @@
             width: 100%; height: 180px; border-radius: 16px; overflow: hidden;
             border: 1px solid var(--glass-border); background: #fff; display: flex; align-items: center; justify-content: center;
         }
-        .logo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .logo-container img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* INPUT SECTION */
+        /* Setup View */
+        .setup-screen { display: flex; flex-direction: column; flex-grow: 1; }
         .input-section { display: flex; flex-direction: column; gap: 12px; margin-top: 20px; }
         input { padding: 14px; border-radius: 12px; border: 1px solid var(--glass-border); background: var(--glass); color: white; outline: none; font-size: 14px; }
         input:focus { border-color: #3498db; }
-
         .btn { padding: 14px 20px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 11px; transition: 0.3s; }
         .add-btn { background: var(--blue-grad); color: white; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); }
         .save-btn { background: var(--primary-grad); color: #000; width: 100%; margin-top: 10px; }
 
-        /* --- BRANDING SECTION (SPONSORS & BROADCAST) --- */
-        .branding-container { margin-top: auto; padding-top: 30px; text-align: center; }
+        /* BRANDING SECTION (Only on Setup Screen) */
+        .branding-section { margin-top: auto; padding-top: 30px; text-align: center; }
         .section-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .section-label::before, .section-label::after { content: ""; height: 1px; width: 30px; background: var(--glass-border); }
-
-        /* Sponsor Style */
         .sponsor-box { width: 100%; height: 80px; background: #000; border-radius: 12px; border: 1px solid var(--glass-border); margin-bottom: 25px; overflow: hidden; }
         .sponsor-box img { width: 100%; height: 100%; object-fit: contain; }
-
-        /* Broadcast Style */
         .broadcast-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .broadcast-item { background: #fff; border-radius: 10px; height: 60px; overflow: hidden; border: 1px solid var(--glass-border); display: flex; align-items: center; justify-content: center; }
         .broadcast-item img { width: 90%; height: 90%; object-fit: contain; }
 
-        /* MATCHES & TABLE */
+        /* MAIN DASHBOARD (Visible after Setup) */
+        .dashboard { display: flex; flex-direction: column; }
         .match-card { background: var(--glass); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1px solid var(--glass-border); }
         .match-header { display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 10px; }
-        .score-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; } /* Corrected for league inputs */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; background: var(--glass); border-radius: 12px; overflow: hidden; font-size: 11px; }
-        th { color: var(--text-muted); padding: 10px; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; }
-        td { padding: 12px 8px; border-bottom: 1px solid var(--glass-border); text-align: center; }
-
-        .hidden { display: none; }
-        .reset-btn { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+        th { color: var(--text-muted); padding: 10px 5px; border-bottom: 1px solid var(--glass-border); text-transform: uppercase; }
+        td { padding: 12px 5px; border-bottom: 1px solid var(--glass-border); text-align: center; }
+        .hidden { display: none !important; }
+        .reset-btn { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; font-size: 9px; padding: 4px 8px; border-radius: 6px; cursor: pointer; float: right; }
+        .section-title { font-size: 16px; color: #f1c40f; margin: 25px 0 10px 0; border-bottom: 1px solid var(--glass-border); padding-bottom: 5px;}
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header-box">
-        <div class="logo-container">
-            <img src="logo.jpg" alt="KPL Logo">
-        </div>
+        <div class="logo-container"><img src="logo.jpg" alt="KPL Logo"></div>
     </div>
 
-    <div class="input-section" id="setupSection">
-        <input type="text" id="teamInput" placeholder="Total teams count (e.g. 4)">
-        <button class="btn add-btn" onclick="handleAdd()">ADD TEAM</button>
-    </div>
+    <div class="dashboard hidden" id="dashboard">
+        <button class="reset-btn" onclick="resetAll()">RESET ALL</button>
+        
+        <h2 class="section-title">League Matches</h2>
+        <div id="leagueMatchArea"></div>
+        
+        <div id="knockoutArea"></div>
 
-    <div id="leagueContent" class="hidden">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h2 style="font-size: 16px; color: var(--text-muted); margin: 0;">Matches</h2>
-            <button class="reset-btn" onclick="resetAll()">RESET</button>
-        </div>
-        <div id="matchList"></div>
-        <h2 style="font-size: 16px; color: var(--text-muted); margin: 25px 0 10px 0;">Points Table</h2>
+        <h2 class="section-title">Points Table</h2>
         <table>
-            <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th></tr></thead>
-            <tbody id="pointsTable"></tbody>
+            <thead><tr><th>Team</th><th>P</th><th>W</th><th>L</th><th>Pts</th><th>NRR</th></tr></thead>
+            <tbody id="pointsBody"></tbody>
         </table>
     </div>
 
-    <div class="branding-container">
-        <div class="section-label">Main Sponsor</div>
-        <div class="sponsor-box">
-            <img src="sponsor.jpg" alt="Payyoli Mixture">
+    <div class="setup-screen" id="setupScreen">
+        <div class="input-section">
+            <input type="text" id="teamInput" placeholder="Total teams count (e.g. 4)">
+            <button class="btn add-btn" id="mainAddBtn" onclick="handleAdd()">ADD TEAM</button>
         </div>
 
-        <div class="section-label">Broadcasting Partners</div>
-        <div class="broadcast-grid">
-            <div class="broadcast-item">
-                <img src="broadcast3.jpg" alt="Airtel Hotstar">
-            </div>
-            <div class="broadcast-item">
-                <img src="broadcast2.jpg" alt="Nakshatra Kalavedhi">
+        <div class="branding-section">
+            <div class="section-label">Main Sponsor</div>
+            <div class="sponsor-box"><img src="sponsor.jpg" alt="Payyoli Mixture"></div>
+            <div class="section-label">Broadcasting Partners</div>
+            <div class="broadcast-grid">
+                <div class="broadcast-item"><img src="broadcast1.jpg" alt="Airtel Hotstar"></div>
+                <div class="broadcast-item"><img src="broadcast2.jpg" alt="Nakshatra Kalavedhi"></div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    let teams = []; let matches = []; let teamLimit = 0; let isCountSet = false;
+    let db = { teams: [], matches: [], semiFixtures: [], finalFixture: null, limit: 0, currentTeam: 0, stage: 'setup' };
 
-    function saveToLocal() { localStorage.setItem('kplData', JSON.stringify({ teams, matches, teamLimit, isCountSet })); }
-
-    function loadFromLocal() {
-        const saved = localStorage.getItem('kplData');
+    function init() {
+        const saved = localStorage.getItem('KPL_PRO_MANAGER');
         if (saved) {
-            const data = JSON.parse(saved);
-            teams = data.teams; matches = data.matches; teamLimit = data.teamLimit; isCountSet = data.isCountSet;
-            if (isCountSet) {
-                document.getElementById('setupSection').classList.add('hidden');
-                document.getElementById('leagueContent').classList.remove('hidden');
-                updateUI();
-            }
+            db = JSON.parse(saved);
+            renderUI();
         }
     }
 
     function handleAdd() {
-        const input = document.getElementById('teamInput');
-        const val = input.value.trim();
-        if (!isCountSet) {
+        let input = document.getElementById('teamInput');
+        let val = input.value.trim();
+        
+        if (db.stage === 'setup') {
             if (val && !isNaN(val)) {
-                teamLimit = parseInt(val); isCountSet = true;
-                input.value = ''; input.placeholder = "Enter Team 1 Name";
-            }
-        } else {
-            if (val && !teams.find(t => t.name === val)) {
-                teams.push({ name: val, played: 0, wins: 0, losses: 0, points: 0 });
+                db.limit = parseInt(val);
+                db.stage = 'naming';
                 input.value = '';
-                if (teams.length >= teamLimit) {
-                    document.getElementById('setupSection').classList.add('hidden');
-                    document.getElementById('leagueContent').classList.remove('hidden');
-                    generateMatches(); updateUI();
+                input.placeholder = "Enter Team 1 Name";
+                renderUI();
+                save();
+            }
+        } else if (db.stage === 'naming') {
+            if (name && !db.teams.find(t => t.name === val)) {
+                // Team object with NRR stats
+                db.teams.push({ name: val, p:0, w:0, l:0, pts:0, rs:0, of:0, rc:0, ob:0, nrr:0.0 });
+                input.value = '';
+                db.currentTeam++;
+                if (db.currentTeam < db.limit) {
+                    input.placeholder = `Enter Team ${db.currentTeam + 1} Name`;
                 } else {
-                    input.placeholder = `Enter Team ${teams.length + 1} Name`;
+                    db.stage = 'league';
+                    generateFixtures();
+                }
+                renderUI();
+                save();
+            }
+        }
+    }
+
+    function generateFixtures() {
+        let t = [...db.teams];
+        if (t.length % 2 !== 0) t.push({ name: "BYE" });
+        for (let r = 0; r < t.length - 1; r++) {
+            for (let i = 0; i < t.length / 2; i++) {
+                let t1 = t[i], t2 = t[t.length - 1 - i];
+                if (t1.name !== "BYE" && t2.name !== "BYE") {
+                    db.matches.push({ t1: t1.name, t2: t2.name, done: false, winner: '' });
                 }
             }
+            t.splice(1, 0, t.pop());
         }
-        saveToLocal();
     }
 
-    function generateMatches() {
-        matches = []; let temp = [...teams];
-        if (temp.length % 2 !== 0) temp.push({ name: "BYE" });
-        let n = temp.length;
-        for (let r = 0; r < n - 1; r++) {
-            for (let i = 0; i < n / 2; i++) {
-                let t1 = temp[i]; let t2 = temp[n - 1 - i];
-                if (t1.name !== "BYE" && t2.name !== "BYE") matches.push({ t1: t1.name, t2: t2.name, done: false, winner: null });
+    // Cricket Over parsing (5.2 -> 5.333)
+    function parseOvers(o) {
+        let s = o.toString();
+        if (s.includes('.')) {
+            let p = s.split('.');
+            return parseInt(p[0]) + (parseInt(p[1]) / 6);
+        }
+        return parseFloat(o) || 0;
+    }
+
+    function saveMatch(idx, type) {
+        let m = (type === 'league') ? db.matches[idx] : (type === 'semi' ? db.semiFixtures[idx] : db.finalFixture);
+        let pre = (type === 'league') ? '' : (type === 'semi' ? 's' : 'f');
+        
+        let r1 = parseInt(document.getElementById(`${pre}r1-${idx}`)?.value || 0);
+        let r2 = parseInt(document.getElementById(`${pre}r2-${idx}`)?.value || 0);
+        
+        if (type === 'league') {
+            let o1 = parseFloat(document.getElementById(`o1-${idx}`).value) || 0;
+            let o2 = parseFloat(document.getElementById(`o2-${idx}`).value) || 0;
+            let a = db.teams.find(t => t.name === m.t1); let b = db.teams.find(t => t.name === m.t2);
+            a.rs += r1; a.of += parseOvers(o1); a.rc += r2; a.ob += parseOvers(o2);
+            b.rs += r2; b.of += parseOvers(o2); b.rc += r1; b.ob += parseOvers(o1);
+            m.r1 = r1; m.o1 = o1; m.r2 = r2; m.o2 = o2;
+            m.winner = r1 > r2 ? m.t1 : (r2 > r1 ? m.t2 : 'Draw');
+            updateStandings();
+            if (db.matches.every(match => match.done)) generateKnockouts();
+        } else {
+            // Simple run comparison for knockouts
+            m.winner = r1 > r2 ? m.t1 : m.t2;
+            if(type === 'semi' && db.semiFixtures.every(s => s.done)) {
+                generateFinal();
             }
-            temp.splice(1, 0, temp.pop());
         }
+        
+        m.done = true;
+        renderUI(); save();
     }
 
-    function saveResult(idx) {
-        const r1 = parseInt(document.getElementById(`r1-${idx}`).value) || 0;
-        const r2 = parseInt(document.getElementById(`r2-${idx}`).value) || 0;
-        const m = matches[idx];
-        const t1 = teams.find(t => t.name === m.t1); const t2 = teams.find(t => t.name === m.t2);
-        t1.played++; t2.played++;
-        if (r1 > r2) { t1.wins++; t1.points += 2; t2.losses++; m.winner = m.t1; }
-        else if (r2 > r1) { t2.wins++; t2.points += 2; t1.losses++; m.winner = m.t2; }
-        else { t1.points++; t2.points++; m.winner = "Draw"; }
-        m.done = true; updateUI(); saveToLocal();
-    }
-
-    function updateUI() {
-        const tb = document.getElementById('pointsTable'); tb.innerHTML = '';
-        [...teams].sort((a,b) => b.points - a.points).forEach(t => {
-            tb.innerHTML += `<tr><td style="text-align:left;font-weight:bold;">${t.name}</td><td>${t.played}</td><td>${t.wins}</td><td>${t.losses}</td><td style="color:#f1c40f">${t.points}</td></tr>`;
+    function updateStandings() {
+        db.teams.forEach(t => { t.p=0; t.w=0; t.l=0; t.pts=0; t.nrr=0.0; });
+        db.matches.filter(m => m.done).forEach(m => {
+            let a = db.teams.find(t => t.name === m.t1); let b = db.teams.find(t => t.name === m.t2);
+            a.p++; b.p++;
+            if (m.r1 > m.r2) { a.w++; a.pts += 2; b.l++; }
+            else if (m.r2 > m.r1) { b.w++; b.pts += 2; a.l++; }
+            else { a.pts += 1; b.pts += 1; }
         });
-        const ml = document.getElementById('matchList'); ml.innerHTML = '';
-        matches.forEach((m, i) => {
-            ml.innerHTML += `<div class="match-card">
-                <div class="match-header"><span>Match ${i+1}</span> <span>${m.t1} vs ${m.t2}</span></div>
-                ${!m.done ? `<div class="score-inputs">
-                    <input type="number" id="r1-${i}" placeholder="${m.t1} Runs">
-                    <input type="number" id="r2-${i}" placeholder="${m.t2} Runs">
-                    <button class="btn save-btn" onclick="saveResult(${i})">SAVE RESULT</button>
-                </div>` : `<div style="color:#f1c40f; font-weight:bold; text-align:center; margin-top:10px;">🏆 WINNER: ${m.winner}</div>`}
-            </div>`;
+        db.teams.forEach(t => {
+            if (t.of > 0 && t.ob > 0) t.nrr = (t.rs/t.of) - (t.rc/t.ob);
         });
     }
 
-    function resetAll() { if(confirm("Clear all?")) { localStorage.removeItem('kplData'); location.reload(); } }
-    window.onload = loadFromLocal;
+    function generateKnockouts() {
+        let sorted = [...db.teams].sort((a,b) => b.pts - a.pts || b.nrr - a.nrr);
+        db.semiFixtures = [
+            { t1: sorted[0].name, t2: sorted[3].name, done: false, winner: '' },
+            { t1: sorted[1].name, t2: sorted[2].name, done: false, winner: '' }
+        ];
+    }
+
+    function generateFinal() {
+        db.finalFixture = { t1: db.semiFixtures[0].winner, t2: db.semiFixtures[1].winner, done: false, winner: '' };
+    }
+
+    function renderUI() {
+        const isDashboard = db.stage === 'league' || db.stage === 'semis' || db.stage === 'final';
+        document.getElementById('setupScreen').classList.toggle('hidden', isDashboard);
+        document.getElementById('dashboard').classList.toggle('hidden', !isDashboard);
+
+        if(db.stage === 'league') {
+            // League matches (with runs/overs)
+            const list = document.getElementById('leagueMatchArea'); list.innerHTML = '';
+            db.matches.forEach((m, i) => list.innerHTML += createCard(m, i, 'league', ''));
+        }
+
+        const koArea = document.getElementById('knockoutArea'); koArea.innerHTML = '';
+        if(db.semiFixtures.length > 0) {
+            koArea.innerHTML += `<h2 class="section-title">Semi Finals</h2>`;
+            db.semiFixtures.forEach((s, i) => koArea.innerHTML += createCard(s, i, 'semi', 's'));
+        }
+        if(db.finalFixture) {
+            koArea.innerHTML += `<h2 class="section-title">Grand Final</h2>`;
+            koArea.innerHTML += createCard(db.finalFixture, 0, 'final', 'f');
+        }
+
+        // Table
+        const tb = document.getElementById('pointsBody'); tb.innerHTML = '';
+        [...db.teams].sort((a,b) => b.pts - a.pts || b.nrr - a.nrr).forEach(t => {
+            tb.innerHTML += `<tr><td style="text-align:left;font-weight:bold;">${t.name}</td><td>${t.p}</td><td>${t.w}</td><td>${t.l}</td><td style="color:#f1c40f">${t.pts}</td><td>${t.nrr.toFixed(2)}</td></tr>`;
+        });
+    }
+
+    function createCard(m, i, type, pre) {
+        if (m.done) return `<div class="match-card"><div class="match-header"><span>DONE</span><span>${m.t1} v ${m.t2}</span></div><div style="text-align:center;color:#f1c40f">Winner: ${m.winner}</div></div>`;
+        const inputs = (type === 'league') ? 
+            `<input type="number" id="r1-${i}" placeholder="Runs"><input type="number" step="0.1" id="o1-${i}" placeholder="Overs"><input type="number" id="r2-${i}" placeholder="Runs"><input type="number" step="0.1" id="o2-${i}" placeholder="Overs">` :
+            `<input type="number" id="${pre}r1-${i}" placeholder="${m.t1} Runs"><input type="number" id="${pre}r2-${i}" placeholder="${m.t2} Runs">`;
+        return `<div class="match-card">
+            <div class="match-header"><span>${m.t1}</span><span>vs</span><span>${m.t2}</span></div>
+            <div class="score-inputs">${inputs}</div>
+            <button class="btn save-btn" style="grid-column: span 2;" onclick="saveMatch(${i}, '${type}')">SAVE RESULT</button>
+        </div>`;
+    }
+
+    function save() { localStorage.setItem('KPL_PRO_MANAGER', JSON.stringify(db)); }
+    function resetAll() { if(confirm("Motham kalayano?")) { localStorage.clear(); location.reload(); } }
+    window.onload = init;
 </script>
 </body>
 </html>
